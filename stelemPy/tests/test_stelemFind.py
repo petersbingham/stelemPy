@@ -17,7 +17,7 @@ class test_singleStable_oneStep(unittest.TestCase):
             return [8.,9.,1.0001,10.]
 
     def runTest(self):
-        s = stelemFind(0.01,self.getElement,0,3)
+        s = stelemFind(0.01,self.getElement,3)
         r = s.getResults()
         #print r
 
@@ -47,6 +47,9 @@ class test_singleStable_oneStep(unittest.TestCase):
         self.assertTrue(r[2][1][0]=='NEW')
         self.assertTrue(r[2][2][0]=='')
 
+        self.assertTrue(s.totStelements==1)
+        self.assertTrue(s.totLostStelements==0)
+
 
 class test_twoStable_oneLost_oneStep(unittest.TestCase):
     def getElement(self, i):
@@ -60,7 +63,7 @@ class test_twoStable_oneLost_oneStep(unittest.TestCase):
             return [12.,13.,1.00001,14.,15.]
 
     def runTest(self):
-        s = stelemFind(0.01,self.getElement,0,4)
+        s = stelemFind(0.01,self.getElement,4)
         r = s.getResults()
         #print
         #for i in range(3): 
@@ -98,6 +101,8 @@ class test_twoStable_oneLost_oneStep(unittest.TestCase):
         self.assertTrue(r[2][2]==['', ''])
         self.assertTrue(r[2][3]==['LOST ', ''])
 
+        self.assertTrue(s.totStelements==2)
+        self.assertTrue(s.totLostStelements==1)
 
 class test_singleStable_twoStep(unittest.TestCase):
     def getElement(self, i):
@@ -109,7 +114,7 @@ class test_singleStable_twoStep(unittest.TestCase):
             return [8.,9.,1.0001,10.]
 
     def runTest(self):
-        s = stelemFind(0.01,self.getElement,0,3,cfSteps=2)
+        s = stelemFind(0.01,self.getElement,3,cfSteps=2)
         r = s.getResults()
         #print r
 
@@ -135,6 +140,9 @@ class test_singleStable_twoStep(unittest.TestCase):
         self.assertTrue(r[1][2][0]==[(2, 2), (1, 1), (0, 0)])
 
         self.assertTrue(r[2][2][0]=='NEW')
+
+        self.assertTrue(s.totStelements==1)
+        self.assertTrue(s.totLostStelements==0)
 
 if __name__ == "__main__":
     #Just for debug
