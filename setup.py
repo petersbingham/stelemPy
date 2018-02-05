@@ -2,10 +2,10 @@
 
 from distutils.core import setup
 
-setup(name='pyDelves',
-      version='2.3',
-      description='Finds roots of an analytical function',
+setup(name='stelemPy',
+      version='0.0',
+      description='Finds and quantifies stable complex elements over a number of sets',
       author="Peter Bingham",
       author_email="petersbingham@hotmail.co.uk",
-      packages=['pydelves'],
+      packages=['stelemPy'],
      )
