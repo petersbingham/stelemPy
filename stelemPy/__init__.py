@@ -1,3 +1,4 @@
+'''
 import copy
 import math
 import sets
@@ -230,4 +231,4 @@ class PoleMetaCalculator:
             if not pole.isLost and N>Nmax:
                 Nmax = N
         return Nmax
-                       
+'''
