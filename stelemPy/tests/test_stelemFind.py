@@ -8,17 +8,18 @@ from stelemPy.stelemFind import *
 import unittest
 
 class test_singleStable_oneStep(unittest.TestCase):
-    def getElement(self, i):
-        if i == 0:
-            return [1.01,2.,3.,4.]
-        if i == 1:
-            return [5.,1.001,6.,7.]
-        if i == 2:
-            return [8.,9.,1.0001,10.]
+    def pushSets(self, s):
+        ret = [[],[],[]]
+        for set in [[1.01,2.,3.,4.],[5.,1.001,6.,7.],[8.,9.,1.0001,10.]]:
+            r = s.nextSet(set)
+            ret[0].append(r[0])
+            ret[1].append(r[1])
+            ret[2].append(r[2])
+        return ret
 
     def runTest(self):
-        s = stelemFind(0.01,self.getElement,3)
-        r = s.getResults()
+        s = stelemFind(0.01)
+        r = self.pushSets(s)
         #print r
 
         # Test all the lengths:
@@ -52,19 +53,19 @@ class test_singleStable_oneStep(unittest.TestCase):
 
 
 class test_twoStable_oneLost_oneStep(unittest.TestCase):
-    def getElement(self, i):
-        if i == 0:
-            return [1.01,2.01,3.,4.,5]
-        if i == 1:
-            return [6.,2.001,1.001,7.,8.]
-        if i == 2:
-            return [9.,10.,1.0001,11.,2.0001]
-        if i == 3:
-            return [12.,13.,1.00001,14.,15.]
+    def pushSets(self, s):
+        ret = [[],[],[]]
+        for set in [[1.01,2.01,3.,4.,5],[6.,2.001,1.001,7.,8.],
+                    [9.,10.,1.0001,11.,2.0001],[12.,13.,1.00001,14.,15.]]:
+            r = s.nextSet(set)
+            ret[0].append(r[0])
+            ret[1].append(r[1])
+            ret[2].append(r[2])
+        return ret
 
     def runTest(self):
-        s = stelemFind(0.01,self.getElement,4)
-        r = s.getResults()
+        s = stelemFind(0.01)
+        r = self.pushSets(s)
         #print
         #for i in range(3): 
         #    print r[i]
@@ -105,17 +106,18 @@ class test_twoStable_oneLost_oneStep(unittest.TestCase):
         self.assertTrue(s.totLostStelements==1)
 
 class test_singleStable_twoStep(unittest.TestCase):
-    def getElement(self, i):
-        if i == 0:
-            return [1.01,2.,3.,4.]
-        if i == 1:
-            return [5.,1.001,6.,7.]
-        if i == 2:
-            return [8.,9.,1.0001,10.]
+    def pushSets(self, s):
+        ret = [[],[],[]]
+        for set in [[1.01,2.,3.,4.],[5.,1.001,6.,7.],[8.,9.,1.0001,10.]]:
+            r = s.nextSet(set)
+            ret[0].append(r[0])
+            ret[1].append(r[1])
+            ret[2].append(r[2])
+        return ret
 
     def runTest(self):
-        s = stelemFind(0.01,self.getElement,3,cfSteps=2)
-        r = s.getResults()
+        s = stelemFind(0.01,2)
+        r = self.pushSets(s)
         #print r
 
         # Test all the lengths:
