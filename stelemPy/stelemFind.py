@@ -21,7 +21,13 @@ class stelemFind:
         self.totLostStelements = 0
         self.newIndex = -1
 
-    def nextSet(self, set):
+    def addSets(self, sets):
+        resultSets = []
+        for set in sets:
+            resultSets.append(self._locateStelements(set))
+        return resultSets
+
+    def addSet(self, set):
         return self._locateStelements(set)
 
 #######################################################
@@ -137,14 +143,14 @@ class stelemFind:
         allStelementsLabels = []
         for i in range(len(self.allStelements)):
             stelements += 1
-            lbl = ""
+            lbl = "REP"
             if self.newIndex!=-1 and i>=self.newIndex:
                 lbl = "NEW"
                 newStelements += 1
 
             for j in range(len(self.lostIndices)):
                 if i == self.lostIndices[j]:
-                    lbl = "LOST "
+                    lbl = "LOST"
                     stelements -= 1
                     lostStelements += 1
                     break
