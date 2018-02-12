@@ -10,33 +10,33 @@ import unittest
 
 class test_singleStable_oneStep(unittest.TestCase):
     def runTest(self):
-        s = stelemConverger(SETS_1_IN, SETS_1_FOUT1)
+        s = stelemConverger(SETS_1_IN, SETS_1_01_FOUT1)
         convergenceGroups = s.createConvergenceGroups()
-        self.assertEqual(convergenceGroups, SETS_1_COUT1)
+        self.assertEqual(convergenceGroups, SETS_1_01_COUT1)
         s.writePriorElements(convergenceGroups)
-        self.assertEqual(convergenceGroups, SETS_1_COUT1_PRE)
+        self.assertEqual(convergenceGroups, SETS_1_01_COUT1_PRE)
         s.setClosestElementToLost(convergenceGroups)
-        self.assertEqual(convergenceGroups, SETS_1_COUT1_POST)
+        self.assertEqual(convergenceGroups, SETS_1_01_COUT1_POST)
 
 class test_singleStable_twoStep(unittest.TestCase):
     def runTest(self):
-        s = stelemConverger(SETS_1_IN, SETS_1_FOUT2)
+        s = stelemConverger(SETS_1_IN, SETS_1_01_FOUT2)
         convergenceGroups = s.createConvergenceGroups()
-        self.assertEqual(convergenceGroups, SETS_1_COUT2)
+        self.assertEqual(convergenceGroups, SETS_1_01_COUT2)
         s.writePriorElements(convergenceGroups)
-        self.assertEqual(convergenceGroups, SETS_1_COUT2_PRE)
+        self.assertEqual(convergenceGroups, SETS_1_01_COUT2_PRE)
         s.setClosestElementToLost(convergenceGroups)
-        self.assertEqual(convergenceGroups, SETS_1_COUT2_POST)
+        self.assertEqual(convergenceGroups, SETS_1_01_COUT2_POST)
 
 class test_twoStable_oneLost_oneStep(unittest.TestCase):
     def runTest(self):
-        s = stelemConverger(SETS_2_IN, SETS_2_FOUT1)
+        s = stelemConverger(SETS_2_IN, SETS_2_01_FOUT1)
         convergenceGroups = s.createConvergenceGroups()
-        self.assertEqual(convergenceGroups, SETS_2_COUT1)
+        self.assertEqual(convergenceGroups, SETS_2_01_COUT1)
         s.writePriorElements(convergenceGroups)
-        self.assertEqual(convergenceGroups, SETS_2_COUT1_PRE)
+        self.assertEqual(convergenceGroups, SETS_2_01_COUT1_PRE)
         s.setClosestElementToLost(convergenceGroups)
-        self.assertEqual(convergenceGroups, SETS_2_COUT1_POST)
+        self.assertEqual(convergenceGroups, SETS_2_01_COUT1_POST)
 
 
 if __name__ == "__main__":

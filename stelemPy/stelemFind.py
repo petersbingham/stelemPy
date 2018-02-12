@@ -1,14 +1,17 @@
 import numericalUtilities as num
 
 DEFAULT_ZEROVALEXP = 7
+DEFAULT_DISTHRES = 0.001
+DEFAULT_CFSTEPS = 1
 
 class stelemFind:
-    def __init__(self, distThreshold, cfSteps=1, zeroValExp=DEFAULT_ZEROVALEXP):
-        self.distThreshold = distThreshold
+    def __init__(self, distThres=DEFAULT_DISTHRES, cfSteps=DEFAULT_CFSTEPS, ratCmp=None):
+        self.distThres = distThres
         self.cfSteps = cfSteps
-        self.zeroValue = 10**(-zeroValExp)
 
-        self.ratCmp = num.RationalCompare(self.zeroValue)
+        self.ratCmp = ratCmp
+        if self.ratCmp is None:
+            self.ratCmp = num.RationalCompare(10**(-DEFAULT_ZEROVALEXP))
         self.lastSet = []
         self.allSets = []
 
@@ -57,7 +60,7 @@ class stelemFind:
                             cmpElement2 = cmpElementSet[j]
                             cdiff = self.ratCmp.getComplexDiff(cmpElement, cmpElement2)
                             absCdiff = num.absDiff(cmpElement, cmpElement2) 
-                            if self.ratCmp.checkComplexDiff(cdiff, self.distThreshold):
+                            if self.ratCmp.checkComplexDiff(cdiff, self.distThres):
                                 if smallestAbsCdiff is None or absCdiff < smallestAbsCdiff:
                                     histTemp = (k, j)
                                     smallestAbsCdiff = absCdiff
