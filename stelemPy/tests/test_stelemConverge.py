@@ -4,7 +4,7 @@ basedir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0,basedir+'/../..')
 
 from stelemPy.stelemConverge import *
-from sets import *
+from testSets import *
 
 import unittest
 

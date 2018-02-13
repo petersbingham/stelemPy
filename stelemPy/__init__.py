@@ -1,6 +1,8 @@
 from stelemFind import *
 from stelemConverge import *
 
+from sets import Set
+
 DEFAULT_STARTING_DISTHRES = 0.01
 
 def calculateStelements(sets, distThres=DEFAULT_DISTHRES, cfSteps=DEFAULT_CFSTEPS, ratCmp=None):
@@ -39,6 +41,9 @@ def calculateConvergenceGroupsRange(sets, startingDistThreshold=DEFAULT_STARTING
             break
         
     return convergenceGroupsRange, tabCounts, distThress
+
+def calculateQIs(convergenceGroupsRangeReturn, amalgThreshold=0., ratCmp=None):
+    return _writePoleCalculationTable(convergenceGroupsRangeReturn, amalgThreshold, ratCmp)
 
 
 def _writePoleCalculationTable(convergenceGroupsRangeReturn, amalgThreshold, ratCmp):
@@ -95,7 +100,7 @@ def _combinePoleSets(oldPoleSet, newPoleSet):
 # The second is only a partial table, named PREVALENCECOMB.tab, to indicate the poles that have been combined.
 def _combineUniquePoleSets(uniquePoleSets, amalgThreshold, ratCmp):
     if ratCmp is None:
-        ratCmp = num.RationalCompare(10**(-DEFAULT_ZEROVALEXP))
+        ratCmp = num.RationalCompare(10**(-DEFAULT_ZEROVALEXP), amalgThreshold)
     newUniquePoleSets = []
     combinedPoleSets = []
     combinedIndices = []
@@ -103,11 +108,11 @@ def _combineUniquePoleSets(uniquePoleSets, amalgThreshold, ratCmp):
         if i not in combinedIndices:
             if i<len(uniquePoleSets)-1:
                 Nmax1 = _getMaxNInPoleSet(uniquePoleSets[i][0])
-                cmpkVal1 = uniquePoleSets[i][0][Nmax1].k
+                cmpkVal1 = uniquePoleSets[i][0][Nmax1][0]
                 iRepeat = False
                 for j in range(i+1, len(uniquePoleSets)):
                     Nmax2 = _getMaxNInPoleSet(uniquePoleSets[j][0])
-                    cmpkVal2 = uniquePoleSets[j][0][Nmax2].k
+                    cmpkVal2 = uniquePoleSets[j][0][Nmax2][0]
                     if ratCmp.isClose(cmpkVal1, cmpkVal2):
                         if not iRepeat:
                             combinedPoleSets.append(uniquePoleSets[i])
@@ -118,7 +123,7 @@ def _combineUniquePoleSets(uniquePoleSets, amalgThreshold, ratCmp):
                             poleSet = uniquePoleSets[i][0]
                         else:
                             poleSet = uniquePoleSets[j][0]
-                        q5_inter = list(sets.Set(uniquePoleSets[i][3]).union(sets.Set(uniquePoleSets[j][3])))
+                        q5_inter = list(Set(uniquePoleSets[i][3]).union(Set(uniquePoleSets[j][3])))
                         # Update the calculations, using the pole set at the higher N.
                         uniquePoleSets[i] = [poleSet, uniquePoleSets[i][1]+uniquePoleSets[j][1], uniquePoleSets[i][2]+uniquePoleSets[j][2], q5_inter]
             newUniquePoleSets.append(uniquePoleSets[i])
@@ -167,6 +172,3 @@ def _getMaxNInPoleSet(poleSet):
         if (pole[2]!="LOST" and pole[2]!="PRE") and N>Nmax:
             Nmax = N
     return Nmax
-
-def calculateQIs(convergenceGroupsRangeReturn, amalgThreshold=0., ratCmp=None):
-    return _writePoleCalculationTable(convergenceGroupsRangeReturn, amalgThreshold, ratCmp)

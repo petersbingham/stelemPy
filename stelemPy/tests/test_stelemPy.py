@@ -4,7 +4,7 @@ basedir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0,basedir+'/../..')
 
 from stelemPy import *
-from sets import *
+from testSets import *
 
 import unittest
 
@@ -63,10 +63,16 @@ class test_calculateStelementsForQIs_twoStable_oneLost_oneStep(unittest.TestCase
 class test_calculateQIs_twoStable_oneLost_oneStep(unittest.TestCase):
     def runTest(self):
         ret = calculateConvergenceGroupsRange(SETS_2_IN)
-        self.assertEqual(calculateQIs(ret), SETS_2_QI)
+        ret = calculateQIs(ret)
+        self.assertEqual(ret, SETS_2_QI)
 
+class test_calculateQIs_amalgamation(unittest.TestCase):
+    def runTest(self):
+        ret = calculateConvergenceGroupsRange(SETS_3_IN)
+        ret = calculateQIs(ret, amalgThreshold=0.01)
+        self.assertEqual(ret, SETS_2_QI)
 
 if __name__ == "__main__":
     #Just for debug
-    b = test_calculateQIs_twoStable_oneLost_oneStep()
+    b = test_calculateQIs_amalgamation()
     b.runTest()

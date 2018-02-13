@@ -4,7 +4,7 @@ basedir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0,basedir+'/../..')
 
 from stelemPy.stelemFind import *
-from sets import *
+from testSets import *
 
 import unittest
 
@@ -31,5 +31,5 @@ class test_twoStable_oneLost_oneStep(unittest.TestCase):
 
 if __name__ == "__main__":
     #Just for debug
-    b = example_testcase()
+    b = test_twoStable_oneLost_oneStep()
     b.runTest()
