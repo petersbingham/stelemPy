@@ -5,7 +5,8 @@ from sets import Set
 
 DEFAULT_STARTING_DISTHRES = 0.01
 
-def calculateStelements(sets, distThres=DEFAULT_DISTHRES, cfSteps=DEFAULT_CFSTEPS, ratCmp=None):
+def calculateStelements(sets, distThres=DEFAULT_DISTHRES, 
+                        cfSteps=DEFAULT_CFSTEPS, ratCmp=None):
     s = stelemFind(distThres, cfSteps, ratCmp)
     return s.addSets(sets)
     
@@ -16,12 +17,15 @@ def calculateConvergenceGroups(sets, stelementsResults):
     s.setClosestElementToLost(convergenceGroups)
     return convergenceGroups
 
-def calculateConvergenceGroupsRange(sets, startingDistThreshold=DEFAULT_STARTING_DISTHRES, endDistThreshold=None, cfSteps=DEFAULT_CFSTEPS, ratCmp=None):
+def calculateConvergenceGroupsRange(sets, 
+                                    startingDistThres=DEFAULT_STARTING_DISTHRES, 
+                                    endDistThres=None, cfSteps=DEFAULT_CFSTEPS, 
+                                    ratCmp=None):
     tabCounts = []
     convergenceGroupsRange = []
     distThress = []
 
-    distThres = startingDistThreshold    
+    distThres = startingDistThres    
     while True:
         distThress.append(distThres)
 
@@ -35,140 +39,150 @@ def calculateConvergenceGroupsRange(sets, startingDistThreshold=DEFAULT_STARTING
         sc.setClosestElementToLost(convergenceGroups)
         convergenceGroupsRange.append(convergenceGroups)
 
-        if sf.totStelements != 0 and (endDistThreshold is None or distThres > endDistThreshold*1.1):
+        stop = (endDistThres is not None and distThres < endDistThres*1.1)
+        if sf.totStelements != 0 and not stop:
             distThres /= 10.0
         else:
             break
         
     return convergenceGroupsRange, tabCounts, distThress
 
-def calculateQIs(convergenceGroupsRangeReturn, amalgThreshold=0., ratCmp=None):
-    return _writePoleCalculationTable(convergenceGroupsRangeReturn, amalgThreshold, ratCmp)
-
-
-def _writePoleCalculationTable(convergenceGroupsRangeReturn, amalgThreshold, ratCmp):
-    poleSetsList = convergenceGroupsRangeReturn[0]
-    distThress = convergenceGroupsRangeReturn[2]
+def calculateQIs(convergenceGroupsRangeRet, amalgThres=0., ratCmp=None):
+    convergenceGroupsRange = convergenceGroupsRangeRet[0]
+    distThress = convergenceGroupsRangeRet[2]
     
-    uniquePoleSets = []
-    lenPiSumkSumi = 0.0
-    totPoleCnts = 0.0
-    for i_dk in range(len(poleSetsList)):
-        poleSets = poleSetsList[i_dk]
-        if len(poleSets) > 0:
-            lenPiSumk = reduce(lambda x,y: x+y, map(lambda poleSet: _getLenpi(poleSet), poleSets))
-            lenPiSumkSumi += lenPiSumk
-            for poleSet in poleSets:
-                i = _getUniquePoleSetIndex(uniquePoleSets, poleSet)
+    distinctConvGrps = []
+    for i_dt in range(len(distThress)):
+        convGrps = convergenceGroupsRange[i_dt]
+        if len(convGrps) > 0:
+            convLens =  map(lambda convGrp: _getConvLen(convGrp), convGrps)
+            totConvLen = sum(convLens)
+
+            for convGrp,convLen in zip(convGrps,convLens):
+                convLenRatio = float(convLen)/totConvLen
                 
-                lenPi = _getLenpi(poleSet)
-                q1_inter = float(lenPi)/lenPiSumk
-                q2_inter = lenPi
-                totPoleCnts += 1.0
-                
+                i = _getDistinctConvGrpIndex(distinctConvGrps, convGrp)
                 if i == -1:
-                    uniquePoleSets.append( [poleSet, q1_inter, q2_inter, [i_dk]] )
+                    distinctConvGrp = [convGrp, convLenRatio, convLen, [i_dt]]
+                    distinctConvGrps.append( distinctConvGrp )
                 else:
-                    oldPoleSet = uniquePoleSets[i][0]
-                    q1_inter_old = uniquePoleSets[i][1]
-                    q2_inter_old = uniquePoleSets[i][2]
-                    q5_inter = uniquePoleSets[i][3]
-                    if i_dk not in q5_inter:
-                        q5_inter.append(i_dk)
-                    uniquePoleSets[i] = [_combinePoleSets(oldPoleSet, poleSet), q1_inter_old+q1_inter, q2_inter_old+q2_inter, q5_inter] #Update pole set
-    if amalgThreshold > 0:
-        uniquePoleSets, combinedPoleSets = _combineUniquePoleSets(uniquePoleSets, amalgThreshold, ratCmp)
-    ret_a = _writeTable(uniquePoleSets, distThress)
+                    #Update set:
+                    oldConvGrp = distinctConvGrps[i][0]
+                    convLenRatio += distinctConvGrps[i][1]
+                    convLen += distinctConvGrps[i][2]
+                    dt_indices = distinctConvGrps[i][3]
+                    if i_dt not in dt_indices:
+                        dt_indices.append(i_dt)
+                    distinctConvGrps[i][0] = _combineGrps(oldConvGrp, convGrp)
+                    distinctConvGrps[i][1] = convLenRatio
+                    distinctConvGrps[i][2] = convLen
+                    distinctConvGrps[i][3] = dt_indices
+    if amalgThres > 0:
+        distinctConvGrps, combinedConvGrps = _amalgamate(distinctConvGrps, 
+                                                         amalgThres, ratCmp)
+    ret_a = _calculateQIs(distinctConvGrps, distThress)
     ret_b = None
-    if amalgThreshold > 0:
-        ret_b = _writeTable(combinedPoleSets, distThress)
+    if amalgThres > 0:
+        ret_b = _calculateQIs(combinedConvGrps, distThress)
     return ret_a, ret_b
 
-def _combinePoleSets(oldPoleSet, newPoleSet):
-    combinedPoleSet = {}
-    for N in oldPoleSet:
-        pole = oldPoleSet[N]
-        if pole[2]!="LOST":
-            combinedPoleSet[N] = pole
-    for N in newPoleSet:
-        pole = newPoleSet[N]
-        if pole[2]!="LOST":
-            combinedPoleSet[N] = pole
-    return combinedPoleSet
+def _combineGrps(oldConvGrps, newConvGrps):
+    combinedConvGrps = {}
+    for i in oldConvGrps:
+        stelement = oldConvGrps[i]
+        if stelement[2]!="LOST":
+            combinedConvGrps[i] = stelement
+    for i in newConvGrps:
+        stelement = newConvGrps[i]
+        if stelement[2]!="LOST":
+            combinedConvGrps[i] = stelement
+    return combinedConvGrps
 
-# Produces two tables. The fist is named ...PREVALENCE.tab and contains tables of amalgamated poles, with updated calculations.
-# The second is only a partial table, named PREVALENCECOMB.tab, to indicate the poles that have been combined.
-def _combineUniquePoleSets(uniquePoleSets, amalgThreshold, ratCmp):
+# Two returns. First is group where close groups have been amalgamated.
+# Second is the groups that have been amalgamated.
+def _amalgamate(distinctConvGrps, amalgThres, ratCmp):
     if ratCmp is None:
-        ratCmp = num.RationalCompare(10**(-DEFAULT_ZEROVALEXP), amalgThreshold)
-    newUniquePoleSets = []
-    combinedPoleSets = []
+        ratCmp = num.RationalCompare(10**(-DEFAULT_ZEROVALEXP), amalgThres)
+    newDistinctConvGrps = []
+    combinedConvGrps = []
     combinedIndices = []
-    for i in range(len(uniquePoleSets)):
+    for i in range(len(distinctConvGrps)):
         if i not in combinedIndices:
-            if i<len(uniquePoleSets)-1:
-                Nmax1 = _getMaxNInPoleSet(uniquePoleSets[i][0])
-                cmpkVal1 = uniquePoleSets[i][0][Nmax1][0]
+            if i<len(distinctConvGrps)-1:
+                maxi1 = _getMaxIndex(distinctConvGrps[i][0])
+                cmpkVal1 = distinctConvGrps[i][0][maxi1][0]
                 iRepeat = False
-                for j in range(i+1, len(uniquePoleSets)):
-                    Nmax2 = _getMaxNInPoleSet(uniquePoleSets[j][0])
-                    cmpkVal2 = uniquePoleSets[j][0][Nmax2][0]
+                for j in range(i+1, len(distinctConvGrps)):
+                    maxi2 = _getMaxIndex(distinctConvGrps[j][0])
+                    cmpkVal2 = distinctConvGrps[j][0][maxi2][0]
                     if ratCmp.isClose(cmpkVal1, cmpkVal2):
                         if not iRepeat:
-                            combinedPoleSets.append(uniquePoleSets[i])
+                            combinedConvGrps.append(distinctConvGrps[i])
                             iRepeat = True
-                        combinedPoleSets.append(uniquePoleSets[j])
+                        combinedConvGrps.append(distinctConvGrps[j])
                         combinedIndices.append(j)
-                        if Nmax1 > Nmax2:
-                            poleSet = uniquePoleSets[i][0]
+                        if maxi1 > maxi2:
+                            convGrp = distinctConvGrps[i][0]
                         else:
-                            poleSet = uniquePoleSets[j][0]
-                        q5_inter = list(Set(uniquePoleSets[i][3]).union(Set(uniquePoleSets[j][3])))
-                        # Update the calculations, using the pole set at the higher N.
-                        uniquePoleSets[i] = [poleSet, uniquePoleSets[i][1]+uniquePoleSets[j][1], uniquePoleSets[i][2]+uniquePoleSets[j][2], q5_inter]
-            newUniquePoleSets.append(uniquePoleSets[i])
-    return newUniquePoleSets, combinedPoleSets
-        
-def _writeTable(uniquePoleSets, distThress):  
-    tabValues = []
-    uniquePoleSets.sort(key=lambda x: x[1], reverse=True)
-    
-    for uniquePoleSet in uniquePoleSets:
-        smallestdk = distThress[max(uniquePoleSet[3])]
-        Nmax = _getMaxNInPoleSet(uniquePoleSet[0])
-        tabValues.append([uniquePoleSet[0][Nmax][0], smallestdk, uniquePoleSet[2]])
-    return tabValues
+                            convGrp = distinctConvGrps[j][0]
+                        # Update calculations, using higher N:
+                        dt_indices1 = distinctConvGrps[i][3]
+                        dt_indices2 = distinctConvGrps[j][3]
+                        dt_indices = _combineIndices(dt_indices1, dt_indices2)
+                        u1 = distinctConvGrps[i][1]+distinctConvGrps[j][1]
+                        u2 = distinctConvGrps[i][2]+distinctConvGrps[j][2]
+                        distinctConvGrps[i] = [convGrp, u1, u2, dt_indices]
+            newDistinctConvGrps.append(distinctConvGrps[i])
+    return newDistinctConvGrps, combinedConvGrps
 
-def _getUniquePoleSetIndex(uniquePoleSets, poleSet):
-    for i in range(len(uniquePoleSets)):
-        uniquePoleSet = _getPolesInPoleSet(uniquePoleSets[i][0])
+def _combineIndices(a, b):
+    return list(Set(a).union(Set(b)))
+
+def _calculateQIs(convGrps, distThress):  
+    QIs = []
+    convGrps.sort(key=lambda x: x[1], reverse=True)
+    
+    for convGrp in convGrps:
+        smallestdk = distThress[max(convGrp[3])]
+        maxi = _getMaxIndex(convGrp[0])
+        QIs.append([convGrp[0][maxi][0], smallestdk, convGrp[2]])
+    return QIs
+
+def _getDistinctConvGrpIndex(distinctConvGrps, convGrp):
+    for i in range(len(distinctConvGrps)):
+        filtDistinctConvGrp = _filtOutLost(distinctConvGrps[i][0])
+        filtIndices = filtDistinctConvGrp.keys()
+        filtStelements = map(lambda x: x[0], filtDistinctConvGrp.values())
         found = True
-        for N in sorted(poleSet.keys()):
-            pole = poleSet[N]
-            if pole[2]=="LOST":
+        for j in sorted(convGrp.keys()):
+            stelements = convGrp[j]
+            if stelements[2]=="LOST":
                 break
-            elif N not in uniquePoleSet.keys() or pole[0] not in map(lambda x: x[0], uniquePoleSet.values()):
+            elif j not in filtIndices or stelements[0] not in filtStelements:
                 found = False
                 break
         if found:
             return i
     return -1
 
-def _getPolesInPoleSet(poleSet):
-    nonLostPoles = {}
-    for N in poleSet:
-        pole = poleSet[N]
-        if pole[2]!="LOST":
-            nonLostPoles[N] = pole
-    return nonLostPoles
+def _filtOutLost(convGrp):
+    nonLostStelements = {}
+    for i in convGrp:
+        stelement = convGrp[i]
+        if stelement[2]!="LOST":
+            nonLostStelements[i] = stelement
+    return nonLostStelements
 
-def _getLenpi(poleSet):
-    return sum((pole[2]!="LOST" and pole[2]!="PRE") for pole in poleSet.values())
+def _isConv(stelement):
+    return stelement[2]!="LOST" and stelement[2]!="PRE"
+
+def _getConvLen(convGrp):
+    return sum(_isConv(stelement) for stelement in convGrp.values())
     
-def _getMaxNInPoleSet(poleSet):
-    Nmax = 0
-    for N in poleSet:
-        pole = poleSet[N]
-        if (pole[2]!="LOST" and pole[2]!="PRE") and N>Nmax:
-            Nmax = N
-    return Nmax
+def _getMaxIndex(convGrp):
+    imax = 0
+    for i in convGrp:
+        stelement = convGrp[i]
+        if _isConv(stelement) and i>imax:
+            imax = i
+    return imax

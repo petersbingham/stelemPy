@@ -69,8 +69,8 @@ class test_calculateQIs_twoStable_oneLost_oneStep(unittest.TestCase):
 class test_calculateQIs_amalgamation(unittest.TestCase):
     def runTest(self):
         ret = calculateConvergenceGroupsRange(SETS_3_IN)
-        ret = calculateQIs(ret, amalgThreshold=0.01)
-        self.assertEqual(ret, SETS_2_QI)
+        ret = calculateQIs(ret, amalgThres=0.01)
+        self.assertEqual(ret, SETS_3_QI_AMALAG)
 
 if __name__ == "__main__":
     #Just for debug

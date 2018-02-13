@@ -1,4 +1,4 @@
-import numericalUtilities as num
+import pynumutil as num
 
 class stelemConverger:
     def __init__(self, sets, stelementsResults):
@@ -6,7 +6,7 @@ class stelemConverger:
         self.stelementsResults = stelementsResults
 
     def createConvergenceGroups(self):
-        convergenceGroups = []
+        convGroups = []
         lastsi = None
         for si in range(len(self.stelementsResults)):
             stelementsResult = self.stelementsResults[si]
@@ -16,26 +16,28 @@ class stelemConverger:
                 lbl = stelementsResult[2][pi]
 
                 if lbl == "NEW":
-                    convergenceGroups.append({si:[stelement,hist,lbl]})
+                    convGroups.append({si:[stelement,hist,lbl]})
                 elif lbl != "LOST":
                     found = False
-                    for i in range(len(convergenceGroups)):
-                        if si not in convergenceGroups[i] and convergenceGroups[i][lastsi][1][0][1]==hist[1][1]:
-                            convergenceGroups[i][si] = [stelement,hist,lbl]
-                            found = True
-                            break
+                    for i in range(len(convGroups)):
+                        if si not in convGroups[i]:
+                            if convGroups[i][lastsi][1][0][1]==hist[1][1]:
+                                convGroups[i][si] = [stelement,hist,lbl]
+                                found = True
+                                break
                     if not found:
-                        raise Exception("Could not find stelement set for repeated stelement!") #Should never be here
+                        assert False #Could not find repeated stelement
                 else:
-                    for i in range(len(convergenceGroups)):
-                        if convergenceGroups[i][lastsi][0] == stelement:
-                            convergenceGroups[i][si] = [stelement,None,"LOST"] #Just carry the value forward for now.
+                    for i in range(len(convGroups)):
+                        if convGroups[i][lastsi][0] == stelement:
+                            # Just carry the value forward for now:
+                            convGroups[i][si] = [stelement,None,"LOST"]
 
             lastsi = si
-        return convergenceGroups
+        return convGroups
 
-    def writePriorElements(self, convergenceGroups):
-        for stelementSet in convergenceGroups:
+    def writePriorElements(self, convGroups):
+        for stelementSet in convGroups:
             firstFnd = min(stelementSet.keys())
             firstHist = stelementSet[firstFnd][1]
             for h in firstHist[1:]:
@@ -43,8 +45,8 @@ class stelemConverger:
                 ei = h[1]
                 stelementSet[si] = [self.sets[si][ei],None,"PRE"]
 
-    def setClosestElementToLost(self, convergenceGroups):
-        for stelementSet in convergenceGroups:
+    def setClosestElementToLost(self, convGroups):
+        for stelementSet in convGroups:
             for si,stelement in stelementSet.iteritems():
                 if stelement[2] == "LOST":
                     smallestDiff = None
