@@ -102,7 +102,7 @@ def _combineGrps(oldConvGrps, newConvGrps):
 # Second is the groups that have been amalgamated.
 def _amalgamate(distinctConvGrps, amalgThres, ratCmp):
     if ratCmp is None:
-        ratCmp = num.RationalCompare(10**(-DEFAULT_ZEROVALEXP), amalgThres)
+        ratCmp = num.rationalCompare1(10**(-DEFAULT_ZEROVALEXP), amalgThres)
     newDistinctConvGrps = []
     combinedConvGrps = []
     combinedIndices = []
