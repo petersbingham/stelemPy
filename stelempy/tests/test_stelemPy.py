@@ -60,19 +60,24 @@ class test_calculateStelementsForQIs_twoStable_oneLost_oneStep(unittest.TestCase
 
 
 
-class test_calculateQIs_twoStable_oneLost_oneStep(unittest.TestCase):
+class test_calculateQIsFromRange_twoStable_oneLost_oneStep(unittest.TestCase):
     def runTest(self):
         ret = calculateConvergenceGroupsRange(SETS_2_IN)
-        ret = calculateQIs(ret)
+        ret = calculateQIsFromRange(ret)
         self.assertEqual(ret, SETS_2_QI)
 
-class test_calculateQIs_amalgamation(unittest.TestCase):
+class test_calculateQIsFromRange_amalgamation(unittest.TestCase):
     def runTest(self):
         ret = calculateConvergenceGroupsRange(SETS_3_IN)
-        ret = calculateQIs(ret, amalgThres=0.01)
+        ret = calculateQIsFromRange(ret, amalgThres=0.01)
+        self.assertEqual(ret, SETS_3_QI_AMALAG)
+
+class test_calculateQIs(unittest.TestCase):
+    def runTest(self):
+        ret = calculateQIs(SETS_3_IN, amalgThres=0.01)
         self.assertEqual(ret, SETS_3_QI_AMALAG)
 
 if __name__ == "__main__":
     #Just for debug
-    b = test_calculateQIs_amalgamation()
+    b = test_calculateQIsFromRange_amalgamation()
     b.runTest()

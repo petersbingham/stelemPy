@@ -1,18 +1,18 @@
 import pynumutil as num
 
-DEFAULT_ZEROVALEXP = 7
-DEFAULT_DISTHRES = 0.001
-DEFAULT_CFSTEPS = 1
+default_zeroValExp = 7
+default_distThres = 0.001
+default_cfSteps = 1
 
 class stelemFind:
-    def __init__(self, distThres=DEFAULT_DISTHRES, cfSteps=DEFAULT_CFSTEPS, 
+    def __init__(self, distThres=default_distThres, cfSteps=default_cfSteps, 
                  ratCmp=None):
         self.distThres = distThres
         self.cfSteps = cfSteps
 
         self.ratCmp = ratCmp
         if self.ratCmp is None:
-            self.ratCmp = num.rationalCompare1(10**(-DEFAULT_ZEROVALEXP))
+            self.ratCmp = num.rationalCompare1(10**(-default_zeroValExp))
         self.lastSet = []
         self.allSets = []
 
