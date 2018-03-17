@@ -10,5 +10,5 @@ setup(name='stelempy',
       author="Peter Bingham",
       author_email="petersbingham@hotmail.co.uk",
       packages=['stelempy'],
-      package_data={'stelempy': ['tests/*', 'README.md'],
+      package_data={'stelempy': ['tests/*', 'README.md']}
      )
