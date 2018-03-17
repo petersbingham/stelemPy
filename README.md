@@ -1,5 +1,5 @@
 # stelempy
-Finds and quantifies stable elements over a number of sets.
+Python package to find and quantify stable elements over a number of sets.
 
 ## Installation
 
