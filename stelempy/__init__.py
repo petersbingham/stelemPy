@@ -5,97 +5,6 @@ from sets import Set
 
 default_starting_distThres = 0.01
 
-def calculateStelements(sets, distThres=default_distThres, 
-                        cfSteps=default_cfSteps, ratCmp=None):
-    s = stelemFind(distThres, cfSteps, ratCmp)
-    return s.addSets(sets)
-    
-def calculateConvergenceGroups(sets, stelementsResults):
-    s = stelemConverger(sets, stelementsResults)
-    convergenceGroups = s.createConvergenceGroups()
-    s.writePriorElements(convergenceGroups)
-    s.setClosestElementToLost(convergenceGroups)
-    return convergenceGroups
-
-def calculateQIs(sets, startingDistThres=default_starting_distThres,
-                 endDistThres=None, cfSteps=default_cfSteps, amalgThres=0.,
-                 ratCmp=None):
-    ret = calculateConvergenceGroupsRange(sets, startingDistThres, endDistThres,
-                                          cfSteps, ratCmp)
-    return calculateQIsFromRange(ret, amalgThres, ratCmp)
-
-
-# Following two functions are the two steps used for the calculateQIs. They have
-# been made public since the intermediate calculations may be of interest.
-def calculateConvergenceGroupsRange(sets, 
-                                    startingDistThres=default_starting_distThres, 
-                                    endDistThres=None, cfSteps=default_cfSteps, 
-                                    ratCmp=None):
-    tabCounts = []
-    convergenceGroupsRange = []
-    distThress = []
-
-    distThres = startingDistThres    
-    while True:
-        distThress.append(distThres)
-
-        sf = stelemFind(distThres, cfSteps, ratCmp)   
-        stelementsResults = sf.addSets(sets)
-        tabCounts.append((sf.totStelements, sf.totLostStelements))
-
-        sc = stelemConverger(sets, stelementsResults)
-        convergenceGroups = sc.createConvergenceGroups()
-        sc.writePriorElements(convergenceGroups)
-        sc.setClosestElementToLost(convergenceGroups)
-        convergenceGroupsRange.append(convergenceGroups)
-
-        stop = (endDistThres is not None and distThres < endDistThres*1.1)
-        if sf.totStelements != 0 and not stop:
-            distThres /= 10.0
-        else:
-            break
-        
-    return convergenceGroupsRange, tabCounts, distThress
-
-def calculateQIsFromRange(convergenceGroupsRangeRet, amalgThres=0., ratCmp=None):
-    convergenceGroupsRange = convergenceGroupsRangeRet[0]
-    distThress = convergenceGroupsRangeRet[2]
-    
-    distinctConvGrps = []
-    for i_dt in range(len(distThress)):
-        convGrps = convergenceGroupsRange[i_dt]
-        if len(convGrps) > 0:
-            convLens =  map(lambda convGrp: _getConvLen(convGrp), convGrps)
-            totConvLen = sum(convLens)
-
-            for convGrp,convLen in zip(convGrps,convLens):
-                convLenRatio = float(convLen)/totConvLen
-                
-                i = _getDistinctConvGrpIndex(distinctConvGrps, convGrp)
-                if i == -1:
-                    distinctConvGrp = [convGrp, convLenRatio, convLen, [i_dt]]
-                    distinctConvGrps.append( distinctConvGrp )
-                else:
-                    #Update set:
-                    oldConvGrp = distinctConvGrps[i][0]
-                    convLenRatio += distinctConvGrps[i][1]
-                    convLen += distinctConvGrps[i][2]
-                    dt_indices = distinctConvGrps[i][3]
-                    if i_dt not in dt_indices:
-                        dt_indices.append(i_dt)
-                    distinctConvGrps[i][0] = _combineGrps(oldConvGrp, convGrp)
-                    distinctConvGrps[i][1] = convLenRatio
-                    distinctConvGrps[i][2] = convLen
-                    distinctConvGrps[i][3] = dt_indices
-    if amalgThres > 0:
-        distinctConvGrps, combinedConvGrps = _amalgamate(distinctConvGrps, 
-                                                         amalgThres, ratCmp)
-    ret_a = _calculateQIsFromRange(distinctConvGrps, distThress)
-    ret_b = None
-    if amalgThres > 0:
-        ret_b = _calculateQIsFromRange(combinedConvGrps, distThress)
-    return ret_a, ret_b
-
 def _combineGrps(oldConvGrps, newConvGrps):
     combinedConvGrps = {}
     for i in oldConvGrps:
@@ -196,3 +105,98 @@ def _getMaxIndex(convGrp):
         if _isConv(stelement) and i>imax:
             imax = i
     return imax
+
+########################################################################   
+######################### Public Interface #############################
+########################################################################
+
+def calculateStelements(sets, distThres=default_distThres, 
+                        cfSteps=default_cfSteps, ratCmp=None):
+    s = stelemFind(distThres, cfSteps, ratCmp)
+    return s.addSets(sets)
+    
+def calculateConvergenceGroups(sets, stelementsResults):
+    s = stelemConverger(sets, stelementsResults)
+    convergenceGroups = s.createConvergenceGroups()
+    s.writePriorElements(convergenceGroups)
+    s.setClosestElementToLost(convergenceGroups)
+    return convergenceGroups
+
+def calculateQIs(sets, startingDistThres=default_starting_distThres,
+                 endDistThres=None, cfSteps=default_cfSteps, amalgThres=0.,
+                 ratCmp=None):
+    ret = calculateConvergenceGroupsRange(sets, startingDistThres, endDistThres,
+                                          cfSteps, ratCmp)
+    return calculateQIsFromRange(ret, amalgThres, ratCmp)
+
+
+# Following two functions are the two steps used for the calculateQIs. They have
+# been made public since the intermediate calculations may be of interest.
+def calculateConvergenceGroupsRange(sets, 
+                                    startingDistThres=default_starting_distThres, 
+                                    endDistThres=None, cfSteps=default_cfSteps, 
+                                    ratCmp=None):
+    tabCounts = []
+    convergenceGroupsRange = []
+    distThress = []
+
+    distThres = startingDistThres    
+    while True:
+        distThress.append(distThres)
+
+        sf = stelemFind(distThres, cfSteps, ratCmp)   
+        stelementsResults = sf.addSets(sets)
+        tabCounts.append((sf.totStelements, sf.totLostStelements))
+
+        sc = stelemConverger(sets, stelementsResults)
+        convergenceGroups = sc.createConvergenceGroups()
+        sc.writePriorElements(convergenceGroups)
+        sc.setClosestElementToLost(convergenceGroups)
+        convergenceGroupsRange.append(convergenceGroups)
+
+        stop = (endDistThres is not None and distThres < endDistThres*1.1)
+        if sf.totStelements != 0 and not stop:
+            distThres /= 10.0
+        else:
+            break
+        
+    return convergenceGroupsRange, tabCounts, distThress
+
+def calculateQIsFromRange(convergenceGroupsRangeRet, amalgThres=0., ratCmp=None):
+    convergenceGroupsRange = convergenceGroupsRangeRet[0]
+    distThress = convergenceGroupsRangeRet[2]
+    
+    distinctConvGrps = []
+    for i_dt in range(len(distThress)):
+        convGrps = convergenceGroupsRange[i_dt]
+        if len(convGrps) > 0:
+            convLens =  map(lambda convGrp: _getConvLen(convGrp), convGrps)
+            totConvLen = sum(convLens)
+
+            for convGrp,convLen in zip(convGrps,convLens):
+                convLenRatio = float(convLen)/totConvLen
+                
+                i = _getDistinctConvGrpIndex(distinctConvGrps, convGrp)
+                if i == -1:
+                    distinctConvGrp = [convGrp, convLenRatio, convLen, [i_dt]]
+                    distinctConvGrps.append( distinctConvGrp )
+                else:
+                    #Update set:
+                    oldConvGrp = distinctConvGrps[i][0]
+                    convLenRatio += distinctConvGrps[i][1]
+                    convLen += distinctConvGrps[i][2]
+                    dt_indices = distinctConvGrps[i][3]
+                    if i_dt not in dt_indices:
+                        dt_indices.append(i_dt)
+                    distinctConvGrps[i][0] = _combineGrps(oldConvGrp, convGrp)
+                    distinctConvGrps[i][1] = convLenRatio
+                    distinctConvGrps[i][2] = convLen
+                    distinctConvGrps[i][3] = dt_indices
+    if amalgThres > 0:
+        distinctConvGrps, combinedConvGrps = _amalgamate(distinctConvGrps, 
+                                                         amalgThres, ratCmp)
+    ret_a = _calculateQIsFromRange(distinctConvGrps, distThress)
+    ret_b = None
+    if amalgThres > 0:
+        ret_b = _calculateQIsFromRange(combinedConvGrps, distThress)
+    return ret_a, ret_b
