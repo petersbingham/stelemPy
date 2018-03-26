@@ -159,7 +159,7 @@ def calculateConvergenceGroupsRange(sets,
             distThres /= 10.0
         else:
             break
-        
+
     return convergenceGroupsRange, tabCounts, distThress
 
 def calculateQIsFromRange(convergenceGroupsRangeRet, amalgThres=0., ratCmp=None):
