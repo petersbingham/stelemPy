@@ -192,11 +192,11 @@ def calculateQIsFromRange(convergenceGroupsRangeRet, amalgThres=0., ratCmp=None)
                     distinctConvGrps[i][1] = convLenRatio
                     distinctConvGrps[i][2] = convLen
                     distinctConvGrps[i][3] = dt_indices
-    if amalgThres > 0:
+    if amalgThres > 0.:
         distinctConvGrps, combinedConvGrps = _amalgamate(distinctConvGrps, 
                                                          amalgThres, ratCmp)
     ret_a = _calculateQIsFromRange(distinctConvGrps, distThress)
     ret_b = None
-    if amalgThres > 0:
+    if amalgThres > 0.:
         ret_b = _calculateQIsFromRange(combinedConvGrps, distThress)
     return ret_a, ret_b
