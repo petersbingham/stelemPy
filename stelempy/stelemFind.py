@@ -12,7 +12,7 @@ class stelemFind:
 
         self.ratCmp = ratCmp
         if self.ratCmp is None:
-            self.ratCmp = num.rationalCompare1(10**(-default_zeroValExp))
+            self.ratCmp = num.RationalCompare1(10**(-default_zeroValExp))
         self.lastSet = []
         self.allSets = []
 
