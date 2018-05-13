@@ -6,40 +6,40 @@ from sets import Set
 default_starting_dist_thres = 0.01
 
 def _combine_grps(old_conv_grps, new_conv_grps):
-    combinedConvGrps = {}
+    combined_conv_grps = {}
     for i in old_conv_grps:
         stelement = old_conv_grps[i]
         if stelement[2]!="LOST":
-            combinedConvGrps[i] = stelement
+            combined_conv_grps[i] = stelement
     for i in new_conv_grps:
         stelement = new_conv_grps[i]
         if stelement[2]!="LOST":
-            combinedConvGrps[i] = stelement
-    return combinedConvGrps
+            combined_conv_grps[i] = stelement
+    return combined_conv_grps
 
 # Two returns. First is group where close groups have been amalgamated.
 # Second is the groups that have been amalgamated.
 def _amalgamate(distinct_conv_grps, amalg_thres, ratcmp):
     if ratcmp is None:
-        ratcmp = num.RationalCompare1(10**(-default_zeroValExp), amalg_thres)
-    newDistinctConvGrps = []
-    combinedConvGrps = []
-    combinedIndices = []
+        ratcmp = num.RationalCompare1(10**(-default_zero_val_exp), amalg_thres)
+    new_distinct_conv_grps = []
+    combined_conv_grps = []
+    combined_indices = []
     for i in range(len(distinct_conv_grps)):
-        if i not in combinedIndices:
+        if i not in combined_indices:
             if i<len(distinct_conv_grps)-1:
                 maxi1 = _get_max_index(distinct_conv_grps[i][0])
-                cmpkVal1 = distinct_conv_grps[i][0][maxi1][0]
-                iRepeat = False
+                cmpk_val1 = distinct_conv_grps[i][0][maxi1][0]
+                i_repeat = False
                 for j in range(i+1, len(distinct_conv_grps)):
                     maxi2 = _get_max_index(distinct_conv_grps[j][0])
-                    cmpkVal2 = distinct_conv_grps[j][0][maxi2][0]
-                    if ratcmp.is_close(cmpkVal1, cmpkVal2):
-                        if not iRepeat:
-                            combinedConvGrps.append(distinct_conv_grps[i])
-                            iRepeat = True
-                        combinedConvGrps.append(distinct_conv_grps[j])
-                        combinedIndices.append(j)
+                    cmpk_val2 = distinct_conv_grps[j][0][maxi2][0]
+                    if ratcmp.is_close(cmpk_val1, cmpk_val2):
+                        if not i_repeat:
+                            combined_conv_grps.append(distinct_conv_grps[i])
+                            i_repeat = True
+                        combined_conv_grps.append(distinct_conv_grps[j])
+                        combined_indices.append(j)
                         if maxi1 > maxi2:
                             conv_grp = distinct_conv_grps[i][0]
                         else:
@@ -51,8 +51,8 @@ def _amalgamate(distinct_conv_grps, amalg_thres, ratcmp):
                         u1 = distinct_conv_grps[i][1]+distinct_conv_grps[j][1]
                         u2 = distinct_conv_grps[i][2]+distinct_conv_grps[j][2]
                         distinct_conv_grps[i] = [conv_grp, u1, u2, dt_indices]
-            newDistinctConvGrps.append(distinct_conv_grps[i])
-    return newDistinctConvGrps, combinedConvGrps
+            new_distinct_conv_grps.append(distinct_conv_grps[i])
+    return new_distinct_conv_grps, combined_conv_grps
 
 def _combine_indices(a, b):
     return list(Set(a).union(Set(b)))
@@ -69,15 +69,15 @@ def _calculate_QIs_from_range(conv_grps, dist_thress):
 
 def _get_distinct_conv_grp_index(distinct_conv_grps, conv_grp):
     for i in range(len(distinct_conv_grps)):
-        filtDistinctConvGrp = _filt_out_lost(distinct_conv_grps[i][0])
-        filtIndices = filtDistinctConvGrp.keys()
-        filtStelements = map(lambda x: x[0], filtDistinctConvGrp.values())
+        filt_distinct_conv_grp = _filt_out_lost(distinct_conv_grps[i][0])
+        filt_indices = filt_distinct_conv_grp.keys()
+        filt_stelements = map(lambda x: x[0], filt_distinct_conv_grp.values())
         found = True
         for j in sorted(conv_grp.keys()):
             stelements = conv_grp[j]
             if stelements[2]=="LOST":
                 break
-            elif j not in filtIndices or stelements[0] not in filtStelements:
+            elif j not in filt_indices or stelements[0] not in filt_stelements:
                 found = False
                 break
         if found:
@@ -85,12 +85,12 @@ def _get_distinct_conv_grp_index(distinct_conv_grps, conv_grp):
     return -1
 
 def _filt_out_lost(conv_grp):
-    nonLostStelements = {}
+    non_lost_stelements = {}
     for i in conv_grp:
         stelement = conv_grp[i]
         if stelement[2]!="LOST":
-            nonLostStelements[i] = stelement
-    return nonLostStelements
+            non_lost_stelements[i] = stelement
+    return non_lost_stelements
 
 def _is_conv(stelement):
     return stelement[2]!="LOST" and stelement[2]!="PRE"
@@ -117,15 +117,16 @@ def calculate_stelements(sets, dist_thres=default_dist_thres,
     
 def calculate_convergence_groups(sets, stelements_results):
     s = StelemConverger(sets, stelements_results)
-    convergenceGroups = s.create_convergence_groups()
-    s.write_prior_elements(convergenceGroups)
-    s.set_closest_element_to_lost(convergenceGroups)
-    return convergenceGroups
+    convergence_groups = s.create_convergence_groups()
+    s.write_prior_elements(convergence_groups)
+    s.set_closest_element_to_lost(convergence_groups)
+    return convergence_groups
 
 def calculate_QIs(sets, starting_dist_thres=default_starting_dist_thres,
                   end_dist_thres=None, cfsteps=default_cfsteps, amalg_thres=0.,
                   ratcmp=None):
-    ret = calculate_convergence_groups_range(sets, starting_dist_thres, end_dist_thres,
+    ret = calculate_convergence_groups_range(sets, starting_dist_thres, 
+                                             end_dist_thres,
                                           cfsteps, ratcmp)
     return calculate_QIs_from_range(ret, amalg_thres, ratcmp)
 
@@ -136,8 +137,8 @@ def calculate_convergence_groups_range(sets,
                                 starting_dist_thres=default_starting_dist_thres, 
                                 end_dist_thres=None, cfsteps=default_cfsteps, 
                                 ratcmp=None):
-    tabCounts = []
-    convergenceGroupsRange = []
+    tab_counts = []
+    convergence_groups_range = []
     dist_thress = []
 
     dist_thres = starting_dist_thres    
@@ -146,58 +147,61 @@ def calculate_convergence_groups_range(sets,
 
         sf = StelemFind(dist_thres, cfsteps, ratcmp)   
         stelements_results = sf.add_sets(sets)
-        tabCounts.append((sf.totStelements, sf.totLostStelements))
+        tab_counts.append((sf.tot_stelements, sf.tot_lost_stelements))
 
         sc = StelemConverger(sets, stelements_results)
-        convergenceGroups = sc.create_convergence_groups()
-        sc.write_prior_elements(convergenceGroups)
-        sc.set_closest_element_to_lost(convergenceGroups)
-        convergenceGroupsRange.append(convergenceGroups)
+        convergence_groups = sc.create_convergence_groups()
+        sc.write_prior_elements(convergence_groups)
+        sc.set_closest_element_to_lost(convergence_groups)
+        convergence_groups_range.append(convergence_groups)
 
         stop = (end_dist_thres is not None and dist_thres < end_dist_thres*1.1)
-        if sf.totStelements != 0 and not stop:
+        if sf.tot_stelements != 0 and not stop:
             dist_thres /= 10.0
         else:
             break
 
-    return convergenceGroupsRange, tabCounts, dist_thress
+    return convergence_groups_range, tab_counts, dist_thress
 
 def calculate_QIs_from_range(convergence_groups_range_ret, amalg_thres=0., 
                              ratcmp=None):
-    convergenceGroupsRange = convergence_groups_range_ret[0]
+    convergence_groups_range = convergence_groups_range_ret[0]
     dist_thress = convergence_groups_range_ret[2]
     
     distinct_conv_grps = []
     for i_dt in range(len(dist_thress)):
-        conv_grps = convergenceGroupsRange[i_dt]
+        conv_grps = convergence_groups_range[i_dt]
         if len(conv_grps) > 0:
-            convLens =  map(lambda conv_grp: _get_conv_len(conv_grp), conv_grps)
-            totConvLen = sum(convLens)
+            conv_lens =  map(lambda conv_grp: _get_conv_len(conv_grp), 
+                             conv_grps)
+            tot_conv_len = sum(conv_lens)
 
-            for conv_grp,convLen in zip(conv_grps,convLens):
-                convLenRatio = float(convLen)/totConvLen
+            for conv_grp,conv_len in zip(conv_grps,conv_lens):
+                conv_len_ratio = float(conv_len)/tot_conv_len
                 
                 i = _get_distinct_conv_grp_index(distinct_conv_grps, conv_grp)
                 if i == -1:
-                    distinctConvGrp = [conv_grp, convLenRatio, convLen, [i_dt]]
-                    distinct_conv_grps.append( distinctConvGrp )
+                    distinct_conv_grp = [conv_grp, conv_len_ratio, conv_len, 
+                                         [i_dt]]
+                    distinct_conv_grps.append( distinct_conv_grp )
                 else:
                     #Update set:
-                    oldConvGrp = distinct_conv_grps[i][0]
-                    convLenRatio += distinct_conv_grps[i][1]
-                    convLen += distinct_conv_grps[i][2]
+                    old_conv_grp = distinct_conv_grps[i][0]
+                    conv_len_ratio += distinct_conv_grps[i][1]
+                    conv_len += distinct_conv_grps[i][2]
                     dt_indices = distinct_conv_grps[i][3]
                     if i_dt not in dt_indices:
                         dt_indices.append(i_dt)
-                    distinct_conv_grps[i][0] = _combine_grps(oldConvGrp, conv_grp)
-                    distinct_conv_grps[i][1] = convLenRatio
-                    distinct_conv_grps[i][2] = convLen
+                    distinct_conv_grps[i][0] = _combine_grps(old_conv_grp, 
+                                                             conv_grp)
+                    distinct_conv_grps[i][1] = conv_len_ratio
+                    distinct_conv_grps[i][2] = conv_len
                     distinct_conv_grps[i][3] = dt_indices
     if amalg_thres > 0.:
-        distinct_conv_grps, combinedConvGrps = _amalgamate(distinct_conv_grps, 
+        distinct_conv_grps, combined_conv_grps = _amalgamate(distinct_conv_grps, 
                                                          amalg_thres, ratcmp)
     ret_a = _calculate_QIs_from_range(distinct_conv_grps, dist_thress)
     ret_b = None
     if amalg_thres > 0.:
-        ret_b = _calculate_QIs_from_range(combinedConvGrps, dist_thress)
+        ret_b = _calculate_QIs_from_range(combined_conv_grps, dist_thress)
     return ret_a, ret_b

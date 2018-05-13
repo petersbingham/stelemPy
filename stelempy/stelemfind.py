@@ -1,6 +1,6 @@
 import pynumutil as num
 
-default_zeroValExp = 7
+default_zero_val_exp = 7
 default_dist_thres = 0.001
 default_cfsteps = 1
 
@@ -12,24 +12,24 @@ class StelemFind:
 
         self.ratcmp = ratcmp
         if self.ratcmp is None:
-            self.ratcmp = num.RationalCompare1(10**(-default_zeroValExp))
-        self.lastSet = []
-        self.allSets = []
+            self.ratcmp = num.RationalCompare1(10**(-default_zero_val_exp))
+        self.last_set = []
+        self.all_sets = []
 
-        self.allStelements = []
-        self.allStelementsHist = []
+        self.all_stelements = []
+        self.all_stelements_hist = []
 
-        self.lastStelements = []
-        self.lostIndices = []
-        self.totStelements = 0
-        self.totLostStelements = 0
-        self.newIndex = -1
+        self.last_stelements = []
+        self.lost_indices = []
+        self.tot_stelements = 0
+        self.tot_lost_stelements = 0
+        self.new_index = -1
 
     def add_sets(self, sets):
-        resultSets = []
+        result_sets = []
         for set in sets:
-            resultSets.append(self._locate_stelements(set))
-        return resultSets
+            result_sets.append(self._locate_stelements(set))
+        return result_sets
 
     def add_set(self, set):
         return self._locate_stelements(set)
@@ -38,13 +38,13 @@ class StelemFind:
 #######################################################
 
     def _locate_stelements(self, set):
-        si = len(self.allSets)
+        si = len(self.all_sets)
         new_stelements = []
         new_stelements_last_elements = []
         new_stelements_info_strs = []
         last_stelement_element_indices = ()
-        if len(self.lastStelements) > 0:
-            last_stelement_element_indices = zip(*self.lastStelements)[0]
+        if len(self.last_stelements) > 0:
+            last_stelement_element_indices = zip(*self.last_stelements)[0]
         if si >= self.cfsteps:  
             for i in range(len(set)):
                 element = set[i]
@@ -52,162 +52,164 @@ class StelemFind:
                                                new_stelements_last_elements,
                                                new_stelements_info_strs,
                                                last_stelement_element_indices)
-        self.allSets.append(set)
+        self.all_sets.append(set)
 
         #Determine if lost stelement. If so then note.
-        for lastStelement in self.lastStelements:
-            newLastIndices = map(lambda x : x[0], new_stelements_last_elements)
-            if lastStelement[0] not in newLastIndices:
-                for i in range(len(self.allStelements)):
-                    if self.allStelements[i] == lastStelement[1]:
-                        if i not in self.lostIndices:
-                            self.lostIndices.append(i)
+        for last_stelement in self.last_stelements:
+            new_last_indices = map(lambda x : x[0], 
+                                   new_stelements_last_elements)
+            if last_stelement[0] not in new_last_indices:
+                for i in range(len(self.all_stelements)):
+                    if self.all_stelements[i] == last_stelement[1]:
+                        if i not in self.lost_indices:
+                            self.lost_indices.append(i)
 
         # Now determine if the new stelement is a continuation of a prior 
         # stelement. If so then just update. If not then append.
         # The indices of the prior element of the new_stelement are compared to 
         # element indices of the prior stelement to establish this.
-        self.newIndex = -1
+        self.new_index = -1
         # However, two new stelements may have the same last element, 
         # so we need to keep the details:
-        allocationDetails = {}
+        allocation_details = {}
         for i in range(len(new_stelements)):
-            new_stelementLastElementIndex = new_stelements_last_elements[i][0]
+            new_stelement_last_element_index = new_stelements_last_elements[i][0]
             new_stelement = new_stelements[i]
             new_stelements_info_str = new_stelements_info_strs[i]
             found = False
-            for j in range(len(self.lastStelements)):
-                lastStelementElementIndex = last_stelement_element_indices[j]
-                lastStelement = self.lastStelements[j][1]
-                if new_stelementLastElementIndex == lastStelementElementIndex:
-                    if j not in allocationDetails.keys():
+            for j in range(len(self.last_stelements)):
+                last_stelement_element_index = last_stelement_element_indices[j]
+                last_stelement = self.last_stelements[j][1]
+                if new_stelement_last_element_index == last_stelement_element_index:
+                    if j not in allocation_details.keys():
                         # Uninitialised. Will contain index in the 
-                        # self.allStelements that this maps to, last stelement 
+                        # self.all_stelements that this maps to, last stelement 
                         # value that was replaced. We need to keep these because
                         # if a new stelement has the same maps then need to 
                         # compared both to the original last stelement value.
-                        allocationDetails[j] = None 
+                        allocation_details[j] = None 
                     found = True
                     break
 
             if not found:
-                self._add_new_stelement(new_stelement[1], new_stelements_info_str)
+                self._add_new_stelement(new_stelement[1], 
+                                        new_stelements_info_str)
             else:
-                if allocationDetails[j] is None: 
+                if allocation_details[j] is None: 
                     # We dont know where it is so have to search.
                     found = False
-                    for k in range(len(self.allStelements)):
-                        if lastStelement==self.allStelements[k]:
-                            if k not in self.lostIndices:
-                                allocationDetails[j] = [k, self.allStelements[k]]
+                    for k in range(len(self.all_stelements)):
+                        if last_stelement==self.all_stelements[k]:
+                            if k not in self.lost_indices:
+                                allocation_details[j] = [k, self.all_stelements[k]]
                                 found = True
                                 break
                     if not found:
                         assert False # Could not find stelement to update
-                    self._update_stelement(new_stelement[1], new_stelements_info_str,
-                                          k)
+                    self._update_stelement(new_stelement[1],
+                                           new_stelements_info_str, k)
                 else:
-                    k = allocationDetails[j][0]
-                    orig_stelement = allocationDetails[j][1]
+                    k = allocation_details[j][0]
+                    orig_stelement = allocation_details[j][1]
                     if self._is_latest_stelement_closer(new_stelement[1], 
-                                                     self.allStelements[k], 
-                                                     orig_stelement): 
+                                                        self.all_stelements[k], 
+                                                        orig_stelement): 
                         #Swap them
-                        self._add_new_stelement(self.allStelements[k], 
-                                              self.allStelementsHist[k])
+                        self._add_new_stelement(self.all_stelements[k], 
+                                                self.all_stelements_hist[k])
                         self._update_stelement(new_stelement[1], 
-                                              new_stelements_info_str, k)
+                                               new_stelements_info_str, k)
                     else:
                         self._add_new_stelement(new_stelement[1], 
-                                              new_stelements_info_str)                    
+                                                new_stelements_info_str)                    
 
-        self.lastStelements = new_stelements
+        self.last_stelements = new_stelements
 
         stelements = 0
         new_stelements = 0
-        lostStelements = 0
-        allStelementsLabels = []
-        for i in range(len(self.allStelements)):
+        lost_stelements = 0
+        all_stelements_labels = []
+        for i in range(len(self.all_stelements)):
             stelements += 1
             lbl = "REP"
-            if self.newIndex!=-1 and i>=self.newIndex:
+            if self.new_index!=-1 and i>=self.new_index:
                 lbl = "NEW"
                 new_stelements += 1
 
-            for j in range(len(self.lostIndices)):
-                if i == self.lostIndices[j]:
+            for j in range(len(self.lost_indices)):
+                if i == self.lost_indices[j]:
                     lbl = "LOST"
                     stelements -= 1
-                    lostStelements += 1
+                    lost_stelements += 1
                     break
 
-            allStelementsLabels.append(lbl)
+            all_stelements_labels.append(lbl)
 
-        self.totStelements = stelements+lostStelements
-        self.totLostStelements = lostStelements
+        self.tot_stelements = stelements+lost_stelements
+        self.tot_lost_stelements = lost_stelements
 
-        return list(self.allStelements),\
-               list(self.allStelementsHist),\
-               list(allStelementsLabels)
+        return list(self.all_stelements),\
+               list(self.all_stelements_hist),\
+               list(all_stelements_labels)
 
     def _update_for_previous_sets(self, si, i, element, new_stelements,
                                   new_stelements_last_elements, 
                                   new_stelements_info_strs,
                                   last_stelement_element_indices):
-        cmpElement = element
-        isStelement = True
+        cmp_element = element
+        is_stelement = True
         hist = [(si, i)]
-        firstStep = True
-        repeatStelement = False
+        first_step = True
+        repeat_stelement = False
         for k in reversed(range(si-self.cfsteps, si)):
-            cmpElementSet = self.allSets[k]
-            smallestDiff = None
-            if len(cmpElementSet) > 0:
-                for j in range(len(cmpElementSet)):
-                    cmpElement2 = cmpElementSet[j]
-                    cdiff = self.ratcmp.get_complex_diff(cmpElement, cmpElement2)
-                    diff = num.abs_diff(cmpElement, cmpElement2) 
+            cmp_element_set = self.all_sets[k]
+            smallest_diff = None
+            if len(cmp_element_set) > 0:
+                for j in range(len(cmp_element_set)):
+                    cmp_element2 = cmp_element_set[j]
+                    cdiff = self.ratcmp.get_complex_diff(cmp_element, cmp_element2)
+                    diff = num.abs_diff(cmp_element, cmp_element2) 
                     if self.ratcmp.check_complex_diff(cdiff, self.dist_thres):
-                        if smallestDiff is None or diff < smallestDiff:
-                            histTemp = (k, j)
-                            smallestDiff = diff
-                            smallestCmpElement2 = cmpElement2
-                            if firstStep:
-                                lastIndex = j
-                                lastSmallestCmpElement = smallestCmpElement2
-                    if j==len(cmpElementSet)-1:
-                        if smallestDiff is None:
-                            isStelement = False
-                        elif repeatStelement or\
-                        (firstStep and lastIndex in last_stelement_element_indices):
-                            repeatStelement = True
+                        if smallest_diff is None or diff < smallest_diff:
+                            hist_temp = (k, j)
+                            smallest_diff = diff
+                            smallest_cmp_element2 = cmp_element2
+                            if first_step:
+                                last_index = j
+                                last_smallest_cmp_element = smallest_cmp_element2
+                    if j==len(cmp_element_set)-1:
+                        if smallest_diff is None:
+                            is_stelement = False
+                        elif repeat_stelement or\
+                        (first_step and last_index in last_stelement_element_indices):
+                            repeat_stelement = True
             else:
-                isStelement = False
-            firstStep = False
-            if not isStelement:
+                is_stelement = False
+            first_step = False
+            if not is_stelement:
                 break
             else:
-                cmpElement = smallestCmpElement2
-                hist.append(histTemp)
+                cmp_element = smallest_cmp_element2
+                hist.append(hist_temp)
 
-        if isStelement:    
+        if is_stelement:    
             new_stelements.append((i,element))
-            new_stelements_last_elements.append((lastIndex,lastSmallestCmpElement))
+            new_stelements_last_elements.append((last_index,last_smallest_cmp_element))
             new_stelements_info_strs.append(hist)
 
     def _add_new_stelement(self, new_stelement, new_stelements_info_str):
-        self.allStelements.append(new_stelement)
-        self.allStelementsHist.append(new_stelements_info_str)
+        self.all_stelements.append(new_stelement)
+        self.all_stelements_hist.append(new_stelements_info_str)
         #Record when we start adding new stelements
-        if self.newIndex == -1:
-            self.newIndex = len(self.allStelements)-1
+        if self.new_index == -1:
+            self.new_index = len(self.all_stelements)-1
 
     def _update_stelement(self, new_stelement, new_stelements_info_str, k):
-        self.allStelements[k] = new_stelement
-        self.allStelementsHist[k] = new_stelements_info_str
+        self.all_stelements[k] = new_stelement
+        self.all_stelements_hist[k] = new_stelements_info_str
 
     def _is_latest_stelement_closer(self, new_stelement, old_stelement, 
                                     orig_stelement):
-        newDiff = self.ratcmp.get_complex_diff(new_stelement, orig_stelement)
-        oldDiff = self.ratcmp.get_complex_diff(old_stelement, orig_stelement)
-        return abs(newDiff) < abs(oldDiff)
+        new_diff = self.ratcmp.get_complex_diff(new_stelement, orig_stelement)
+        old_diff = self.ratcmp.get_complex_diff(old_stelement, orig_stelement)
+        return abs(new_diff) < abs(old_diff)

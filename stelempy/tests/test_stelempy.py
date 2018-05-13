@@ -4,7 +4,7 @@ basedir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0,basedir+'/../..')
 
 from stelempy import *
-from testSets import *
+from testsets import *
 
 import unittest
 
@@ -24,18 +24,18 @@ class test_calculate_stelements_two_stable_one_lost_one_step(unittest.TestCase):
 
 class test_calculate_convergence_groups_single_stable_one_step(unittest.TestCase):
     def runTest(self):
-        convergenceGroups = calculate_convergence_groups(SETS_1_IN, SETS_1_01_FOUT1)
-        self.assertEqual(convergenceGroups, SETS_1_01_COUT1_POST)
+        convergence_groups = calculate_convergence_groups(SETS_1_IN, SETS_1_01_FOUT1)
+        self.assertEqual(convergence_groups, SETS_1_01_COUT1_POST)
 
 class test_calculate_convergence_groups_single_stable_two_step(unittest.TestCase):
     def runTest(self):
-        convergenceGroups = calculate_convergence_groups(SETS_1_IN, SETS_1_01_FOUT2)
-        self.assertEqual(convergenceGroups, SETS_1_01_COUT2_POST)
+        convergence_groups = calculate_convergence_groups(SETS_1_IN, SETS_1_01_FOUT2)
+        self.assertEqual(convergence_groups, SETS_1_01_COUT2_POST)
 
 class test_calculate_convergence_groups_two_stable_one_lost_one_step(unittest.TestCase):
     def runTest(self):
-        convergenceGroups = calculate_convergence_groups(SETS_2_IN, SETS_2_01_FOUT1)
-        self.assertEqual(convergenceGroups, SETS_2_01_COUT1_POST)
+        convergence_groups = calculate_convergence_groups(SETS_2_IN, SETS_2_01_FOUT1)
+        self.assertEqual(convergence_groups, SETS_2_01_COUT1_POST)
 
 
 

@@ -9,11 +9,11 @@ class StelemConverger:
         conv_groups = []
         lastsi = None
         for si in range(len(self.stelements_results)):
-            stelementsResult = self.stelements_results[si]
-            for pi in range(len(stelementsResult[0])):
-                stelement = stelementsResult[0][pi]
-                hist = stelementsResult[1][pi]
-                lbl = stelementsResult[2][pi]
+            stelements_result = self.stelements_results[si]
+            for pi in range(len(stelements_result[0])):
+                stelement = stelements_result[0][pi]
+                hist = stelements_result[1][pi]
+                lbl = stelements_result[2][pi]
 
                 if lbl == "NEW":
                     conv_groups.append({si:[stelement,hist,lbl]})
@@ -37,24 +37,24 @@ class StelemConverger:
         return conv_groups
 
     def write_prior_elements(self, conv_groups):
-        for stelementSet in conv_groups:
-            firstFnd = min(stelementSet.keys())
-            firstHist = stelementSet[firstFnd][1]
-            for h in firstHist[1:]:
+        for stelement_set in conv_groups:
+            first_fnd = min(stelement_set.keys())
+            first_hist = stelement_set[first_fnd][1]
+            for h in first_hist[1:]:
                 si = h[0]
                 ei = h[1]
-                stelementSet[si] = [self.sets[si][ei],None,"PRE"]
+                stelement_set[si] = [self.sets[si][ei],None,"PRE"]
 
     def set_closest_element_to_lost(self, conv_groups):
-        for stelementSet in conv_groups:
-            for si,stelement in stelementSet.iteritems():
+        for stelement_set in conv_groups:
+            for si,stelement in stelement_set.iteritems():
                 if stelement[2] == "LOST":
-                    smallestDiff = None
-                    smallestei = None
+                    smallest_diff = None
+                    smallest_ei = None
                     for ei, el in enumerate(self.sets[si]):
                         diff = num.abs_diff(el, stelement[0])
-                        if smallestDiff is None or diff<smallestDiff:
-                            smallestDiff = diff
-                            smallestei = ei
-                    if smallestei is not None:
-                        stelement[0] = self.sets[si][smallestei]
+                        if smallest_diff is None or diff<smallest_diff:
+                            smallest_diff = diff
+                            smallest_ei = ei
+                    if smallest_ei is not None:
+                        stelement[0] = self.sets[si][smallest_ei]
