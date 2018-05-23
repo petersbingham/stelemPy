@@ -15,7 +15,7 @@ Author Libraries (these will have their own dependencies):
     
 ## Overview
 For a number of successive sets, that don't necessarily have the same cardinality, stelempy provides the following:
- 1. Determines, within user provided criteria, the elements (either real or complex) that are deemed close to one another across the successive sets. Collectively, the set of close elements (one from each qualifying set) are referred to as a stelement (stable- or static- element) and are often labelled with the value of the element in the final contributing set. The rationalCompare1 in the pynumutil is used for the comparison.
+ 1. Determines, within user provided criteria, the elements (either real or complex) that are deemed close to one another across the successive sets. Collectively, the set of close elements (one from each qualifying set) are referred to as a stelement (stable- or static- element) and are often labelled with the value of the element in the final contributing set. The RationalCompare1 in the pynumutil is used for the comparison.
  2. Creates tables showing the behaviour of the elements comprising the stelements across all relevant sets as well as sorting and quantifing the stelements according to how prevalent their elements are across all of the sets and to their degree of 'closeness'.
 
 ### Finding the stelements
