@@ -3,7 +3,7 @@ from stelemconverge import *
 
 from sets import Set
 
-default_rtol = 0.001
+default_rtol = 0.01
 default_start_rtol = 0.01
 
 def _combine_grps(old_conv_grps, new_conv_grps):
