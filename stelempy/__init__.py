@@ -3,7 +3,8 @@ from stelemconverge import *
 
 from sets import Set
 
-default_starting_dist_thres = 0.01
+default_rtol = 0.001
+default_start_rtol = 0.01
 
 def _combine_grps(old_conv_grps, new_conv_grps):
     combined_conv_grps = {}
@@ -19,9 +20,7 @@ def _combine_grps(old_conv_grps, new_conv_grps):
 
 # Two returns. First is group where close groups have been amalgamated.
 # Second is the groups that have been amalgamated.
-def _amalgamate(distinct_conv_grps, amalg_thres, ratcmp):
-    if ratcmp is None:
-        ratcmp = num.RationalCompare1(10**(-default_zero_val_exp), amalg_thres)
+def _amalgamate(distinct_conv_grps, ratcmp):
     new_distinct_conv_grps = []
     combined_conv_grps = []
     combined_indices = []
@@ -57,12 +56,12 @@ def _amalgamate(distinct_conv_grps, amalg_thres, ratcmp):
 def _combine_indices(a, b):
     return list(Set(a).union(Set(b)))
 
-def _calculate_QIs_from_range(conv_grps, dist_thress):  
+def _calculate_QIs_from_range(conv_grps, rtols):  
     QIs = []
     conv_grps.sort(key=lambda x: x[1], reverse=True)
     
     for conv_grp in conv_grps:
-        smallestdk = dist_thress[max(conv_grp[3])]
+        smallestdk = rtols[max(conv_grp[3])]
         maxi = _get_max_index(conv_grp[0])
         QIs.append([conv_grp[0][maxi][0], smallestdk, conv_grp[2]])
     return QIs
@@ -106,15 +105,19 @@ def _get_max_index(conv_grp):
             imax = i
     return imax
 
+def create_default_ratcmp():
+    return num.RationalCompare1(default_rtol)
+
 ########################################################################   
 ######################### Public Interface #############################
 ########################################################################
 
-def calculate_stelements(sets, dist_thres=default_dist_thres, 
-                         cfsteps=default_cfsteps, ratcmp=None):
-    s = StelemFind(dist_thres, cfsteps, ratcmp)
+def calculate_stelements(sets, ratcmp=None, cfsteps=default_cfsteps):
+    if ratcmp is None:
+        ratcmp = create_default_ratcmp()
+    s = StelemFind(ratcmp, cfsteps)
     return s.add_sets(sets)
-    
+
 def calculate_convergence_groups(sets, stelements_results):
     s = StelemConverger(sets, stelements_results)
     convergence_groups = s.create_convergence_groups()
@@ -122,30 +125,31 @@ def calculate_convergence_groups(sets, stelements_results):
     s.set_closest_element_to_lost(convergence_groups)
     return convergence_groups
 
-def calculate_QIs(sets, starting_dist_thres=default_starting_dist_thres,
-                  end_dist_thres=None, cfsteps=default_cfsteps, amalg_thres=0.,
-                  ratcmp=None):
-    ret = calculate_convergence_groups_range(sets, starting_dist_thres, 
-                                             end_dist_thres,
-                                          cfsteps, ratcmp)
-    return calculate_QIs_from_range(ret, amalg_thres, ratcmp)
+def calculate_QIs(sets, ratcmp=None, start_rtol=default_start_rtol,
+                  end_rtol=None, cfsteps=default_cfsteps, amalg_ratcmp=None):
+    if ratcmp is None:
+        ratcmp = create_default_ratcmp()
+    ret = calculate_convergence_groups_range(sets, ratcmp, start_rtol, end_rtol,
+                                             cfsteps)
+    return calculate_QIs_from_range(ret, amalg_ratcmp)
 
 
 # Following two functions are the two steps used for the calculate_QIs. They
 # have been made public since the intermediate calculations may be of interest.
-def calculate_convergence_groups_range(sets, 
-                                starting_dist_thres=default_starting_dist_thres, 
-                                end_dist_thres=None, cfsteps=default_cfsteps, 
-                                ratcmp=None):
+def calculate_convergence_groups_range(sets, ratcmp=None,
+                                       start_rtol=default_start_rtol,
+                                       end_rtol=None, cfsteps=default_cfsteps):
+    if ratcmp is None:
+        ratcmp = create_default_ratcmp()
     tab_counts = []
     convergence_groups_range = []
-    dist_thress = []
+    rtols = []
 
-    dist_thres = starting_dist_thres    
+    rtol = start_rtol    
     while True:
-        dist_thress.append(dist_thres)
-
-        sf = StelemFind(dist_thres, cfsteps, ratcmp)   
+        rtols.append(rtol)
+        ratcmp.set_rtol(rtol)
+        sf = StelemFind(ratcmp, cfsteps)   
         stelements_results = sf.add_sets(sets)
         tab_counts.append((sf.tot_stelements, sf.tot_lost_stelements))
 
@@ -155,21 +159,20 @@ def calculate_convergence_groups_range(sets,
         sc.set_closest_element_to_lost(convergence_groups)
         convergence_groups_range.append(convergence_groups)
 
-        stop = (end_dist_thres is not None and dist_thres < end_dist_thres*1.1)
+        stop = (end_rtol is not None and rtol < end_rtol*1.1)
         if sf.tot_stelements != 0 and not stop:
-            dist_thres /= 10.0
+            rtol /= 10.0
         else:
             break
 
-    return convergence_groups_range, tab_counts, dist_thress
+    return convergence_groups_range, tab_counts, rtols
 
-def calculate_QIs_from_range(convergence_groups_range_ret, amalg_thres=0., 
-                             ratcmp=None):
+def calculate_QIs_from_range(convergence_groups_range_ret, amalg_ratcmp=None):
     convergence_groups_range = convergence_groups_range_ret[0]
-    dist_thress = convergence_groups_range_ret[2]
+    rtols = convergence_groups_range_ret[2]
     
     distinct_conv_grps = []
-    for i_dt in range(len(dist_thress)):
+    for i_dt in range(len(rtols)):
         conv_grps = convergence_groups_range[i_dt]
         if len(conv_grps) > 0:
             conv_lens =  map(lambda conv_grp: _get_conv_len(conv_grp), 
@@ -197,11 +200,11 @@ def calculate_QIs_from_range(convergence_groups_range_ret, amalg_thres=0.,
                     distinct_conv_grps[i][1] = conv_len_ratio
                     distinct_conv_grps[i][2] = conv_len
                     distinct_conv_grps[i][3] = dt_indices
-    if amalg_thres > 0.:
+    if amalg_ratcmp:
         distinct_conv_grps, combined_conv_grps = _amalgamate(distinct_conv_grps, 
-                                                         amalg_thres, ratcmp)
-    ret_a = _calculate_QIs_from_range(distinct_conv_grps, dist_thress)
+                                                             amalg_ratcmp)
+    ret_a = _calculate_QIs_from_range(distinct_conv_grps, rtols)
     ret_b = None
-    if amalg_thres > 0.:
-        ret_b = _calculate_QIs_from_range(combined_conv_grps, dist_thress)
+    if amalg_ratcmp:
+        ret_b = _calculate_QIs_from_range(combined_conv_grps, rtols)
     return ret_a, ret_b

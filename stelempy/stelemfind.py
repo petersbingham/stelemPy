@@ -1,18 +1,12 @@
 import pynumutil as num
 
-default_zero_val_exp = 7
-default_dist_thres = 0.001
 default_cfsteps = 1
 
 class StelemFind:
-    def __init__(self, dist_thres=default_dist_thres, cfsteps=default_cfsteps, 
-                 ratcmp=None):
-        self.dist_thres = dist_thres
+    def __init__(self, ratcmp, cfsteps=default_cfsteps):
+        self.ratcmp = ratcmp
         self.cfsteps = cfsteps
 
-        self.ratcmp = ratcmp
-        if self.ratcmp is None:
-            self.ratcmp = num.RationalCompare1(10**(-default_zero_val_exp))
         self.last_set = []
         self.all_sets = []
 
@@ -167,9 +161,10 @@ class StelemFind:
             if len(cmp_element_set) > 0:
                 for j in range(len(cmp_element_set)):
                     cmp_element2 = cmp_element_set[j]
-                    cdiff = self.ratcmp.get_complex_diff(cmp_element, cmp_element2)
+                    cdiff = self.ratcmp.get_complex_diff(cmp_element,
+                                                         cmp_element2)
                     diff = num.abs_diff(cmp_element, cmp_element2) 
-                    if self.ratcmp.check_complex_diff(cdiff, self.dist_thres):
+                    if self.ratcmp.check_complex_diff(cdiff):
                         if smallest_diff is None or diff < smallest_diff:
                             hist_temp = (k, j)
                             smallest_diff = diff

@@ -5,7 +5,7 @@ import shutil
 shutil.copy('README.md', 'stelempy/README.md')
 
 setup(name='stelempy',
-      version='0.11',
+      version='0.12',
       description='Python package to find and quantify stable elements over a number of sets.',
       author="Peter Bingham",
       author_email="petersbingham@hotmail.co.uk",
