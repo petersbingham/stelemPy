@@ -43,11 +43,13 @@ In addition, the package also shows the elements, arranged in order of initial s
 
 ## Usage
 
+For the comparison tests carried out the user can provide an optional interface that is referred to as `ratcmp` in the parameter lists below. An example of this, which may be used, is the `RationalCompare1` class in the pynumutil. Basically the following functions must be implemented: `set_rtol(rtol)`, `is_close(cval1, cval2)`, `get_complex_diff(cval1, cval2)` and `check_complex_diff(cdiff)`. If the `ratcmp` is not supplied then a `RationalCompare1` will be created with an `rtol=0.001`
+
 There are three main public functions, `calculate_stelements`, `calculate_convergence_groups` and `calculate_QIs`. The first two of these functions are designed to be used together to find stelements and their characteristics. The third function is used to calculate stelements, without the details but with a couple of numbers to quantify their 'quality'. There are two additional functions `calculate_convergence_groups_range` and `calculate_QIs_from_range` which are provided in the case that the intermediate calculations for `calculate_QIs` are required.
 
 #### `calculate_stelements` and `calculate_convergence_groups`
 
-`calculate_stelements(sets,rtol=default_rtol,cfsteps=default_cfsteps)` performs the functionality described in the section titled 'Finding the stelements'. It takes as input the sets as a list of lists. The user can optionally supply the distinction threshold and the number of steps over which closeness of elements must be obtained before they can qualify and contribute to a stelement. As output it returns a structure containing the stelements and their description. For example, with a `cfsteps` equal to 1:
+`calculate_stelements(sets, ratcmp=None, cfsteps=default_cfsteps)` performs the functionality described in the section titled 'Finding the stelements'. It takes as input the sets as a list of lists. The user can optionally supply a `ratcmp` and the number of steps over which closeness of elements must be obtained before they can qualify and contribute to a stelement. As output it returns a structure containing the stelements and their description. For example, with a `cfsteps` equal to 1:
 
 Input:
 ```python
@@ -92,7 +94,7 @@ There are two dictionaries returned, one for each of the discovered stelements. 
 #### `calculate_QIs`
 
 This performs the functionality described in the section titled 'Sorting the stelements'. The aim of this function is to return a list of stelements, each accompanied with two quantities representing the 'quality' of the stelement. The signature looks like:
-`calculate_QIs(sets, start_rtol=default_start_rtol, end_rtol=None, cfsteps=default_cfsteps, amalg_rtol=0.)`, where `default_start_rtol = 0.01` and `default_cfsteps = 1`. The parameters are the number of steps, the distinction threshold that the routine starts at, an optional end threshold (default is to continue until no more stelements are found), a qualifying number of steps and an amalgamation threshold. The amalgamation threshold is used when there are several elements in a set that are all very close together. More details on this below. 
+`calculate_QIs(sets, ratcmp=None, start_rtol=default_start_rtol, end_rtol=None, cfsteps=default_cfsteps, amalg_ratcmp=None)`, where `default_start_rtol = 0.01` and `default_cfsteps = 1`. The optional parameters are an `ratcmp`, a number of steps, the rtol that the routine starts at, an optional end rtol (default is to continue until no more stelements are found), a qualifying number of steps and an amalgamation `ratcmp`. The amalgamation `ratcmp` is used when there are several elements in a set that are all very close together. More details on this below. 
 
 The set used for the previous example:
 ```python
@@ -105,9 +107,9 @@ will give the following output from `calculate_QIs` using the default parameters
 ```
 the second element `None` can be ignored for now (it's only relevant for non-zero `amalg_rtol`s). The first tuple element gives the two stelements with their QIs, so for the first stelement, `[1.00001, 0.0001, 6]`,  1.00001 is the value of the element in the last set which contributed to the stelement, 0.0001 is the lowest `rtol` at which the stelement was detected and 6 is the total number of steps across all sets and all `rtol`s where the stelement was detected.
 
-When an amalgamation threshold is provided then once all stelements have been initially located those that are within `amalg_rtol` from one another are merged and the QIs adjusted accordingly. The first element of the returned tuple will contain the analgamated stelements and the summed QIs. The second element (`None` in the example above) is very much secondary and will contain the stelements that were merged to give the first element of the tuple.
+When an amalgamation `ratcmp` is provided then once all stelements have been initially located those that are deemed close by the `amalg_ratcmp` are merged and the QIs adjusted accordingly. The first element of the returned tuple will contain the analgamated stelements and the summed QIs. The second element (`None` in the example above) is very much secondary and will contain the stelements that were merged to give the first element of the tuple.
 
 #### `calculate_convergence_groups_range` and `calculate_QIs_from_range` 
 These functions split the `calculate_QIs` into two function calls, with intermediate calculations being outputted from `calculate_convergence_groups_range`. The signatures look like:
-`calculate_convergence_groups_range(sets, start_rtol=default_start_rtol, end_rtol=None, cfsteps=default_cfsteps)` and `calculate_QIs_from_range(convergence_groups_range_ret, amalg_rtol=0.)`
+`calculate_convergence_groups_range(sets, ratcmp=None, start_rtol=default_start_rtol, end_rtol=None, cfsteps=default_cfsteps)` and `calculate_QIs_from_range(convergence_groups_range_ret, amalg_ratcmp=None)`
 The output from `calculate_convergence_groups_range` is a tuple of three lists. The first list contains all the results from `calculate_convergence_groups` for all of the `rtol`s, the second list are tuples containing the total number of stelements and the number of lost stelements for all of the `rtol`s and the third list contains all the `rtol`s at which a calculation was performed. This returned tuple can then be passed to `calculate_QIs_from_range` to perform the equivalent calculation provided by `calculate_QIs`.
