@@ -131,8 +131,8 @@ def calculate_QIs(sets, starting_dist_thres=default_starting_dist_thres,
     return calculate_QIs_from_range(ret, amalg_thres, ratcmp)
 
 
-# Following two functions are the two steps used for the calculate_QIs. They have
-# been made public since the intermediate calculations may be of interest.
+# Following two functions are the two steps used for the calculate_QIs. They
+# have been made public since the intermediate calculations may be of interest.
 def calculate_convergence_groups_range(sets, 
                                 starting_dist_thres=default_starting_dist_thres, 
                                 end_dist_thres=None, cfsteps=default_cfsteps, 
