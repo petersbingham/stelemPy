@@ -10,7 +10,7 @@ Clone the repository and install with the following commands:
     python setup.py install
     
 ## Dependencies
-Author Libraries (these will have their own dependencies):
+Author packages (these will have their own dependencies):
  - pynumutil https://github.com/petersbingham/pynumutil
     
 ## Overview
