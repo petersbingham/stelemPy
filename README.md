@@ -11,7 +11,7 @@ Clone the repository and install with the following commands:
     
 ## Dependencies
 Author packages (these will have their own dependencies):
- - pynumutil https://github.com/petersbingham/pynumutil
+ - [pynumutil](https://github.com/petersbingham/pynumutil)
     
 ## Overview
 For a number of successive sets, that don't necessarily have the same cardinality, stelempy provides the following:
