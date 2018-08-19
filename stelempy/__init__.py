@@ -1,5 +1,6 @@
 from stelemfind import *
 from stelemconverge import *
+from stelempy.release import __version__
 
 from sets import Set
 
